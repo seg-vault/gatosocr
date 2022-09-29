@@ -119,7 +119,9 @@ public class FileSystemStorageService implements StorageService {
 	@Override
 	public void init() {
 		try {
-			Files.createDirectories(tmpLocation);
+                        if(!Files.exists(tmpLocation)){
+                           Files.createDirectories(tmpLocation); 
+                        }    
                         if(!Files.exists(permLocation)){
                            Files.createDirectories(permLocation); 
                         }                        

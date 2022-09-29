@@ -1,7 +1,7 @@
 getTempFiles();
 getPermFiles();
-//setInterval(getTempFiles,30000);
-//setInterval(getPermFiles,30000);
+setInterval(getTempFiles,30000);
+setInterval(getPermFiles,30000);
 
 function getTempFiles(){
     $.ajax({

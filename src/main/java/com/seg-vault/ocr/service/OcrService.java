@@ -49,16 +49,18 @@ public class OcrService {
             logger.info("Setting perm path to: "+permPath.toString()); //permPath.toAbsolutePath().toString()
             logger.info(paths.toString());
             for(Path path : paths){
-                logger.info("Converting: "+path.toString()+" ...");
-                ITesseract tess = new Tesseract();
-                List<RenderedFormat> format = new ArrayList<RenderedFormat>();
-                format.add(RenderedFormat.PDF);
-                String newName = permPath.toString() + '\\' + path.getFileName();
-                logger.info("New Name: " + newName);
-                tess.createDocuments(path.toString(), newName, format);//path.toAbsolutePath().toString()
-                logger.info(path.toString()+" ...complete");
-                logger.info("deleting path...");
-                Files.delete(path);
+                if(Files.exists(path)){
+                    logger.info("Converting: "+path.toString()+" ...");
+                    ITesseract tess = new Tesseract();
+                    List<RenderedFormat> format = new ArrayList<RenderedFormat>();
+                    format.add(RenderedFormat.PDF);
+                    String newName = permPath.toString() + '\\' + path.getFileName();
+                    logger.info("New Name: " + newName);
+                    tess.createDocuments(path.toString(), newName, format);//path.toAbsolutePath().toString()
+                    logger.info(path.toString()+" ...complete");
+                    logger.info("deleting path...");
+                    Files.delete(path);
+                }
             }
         } catch (Exception e) {
             logger.error("Error while executing sample job", e);
