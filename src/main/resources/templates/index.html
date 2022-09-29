@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>seg-vault&#39s OCR Service</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script src="/js/files.js"></script>
+        <script src="/js/service.js"></script>
+    </head>
+    <body>
+        <div><h1>seg-vault's OCR Service</h1></div>
+        <div>
+            <form method="POST" enctype="multipart/form-data" action="/files/upload">
+                    <table>
+                            <tr><td>File to upload:</td><td><input type="file" name="file" required /></td></tr>
+                            <tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+                    </table>
+            </form>
+	</div>
+        <table>
+            <tr>
+                <th>Pending Conversion</th><!-- comment -->
+                <th>Converted</th>
+            </tr> 
+            <tr> 
+                <td id="pending-files"></td> 
+                <td id="completed-files"></td> 
+        </table>
+    </body>
+</html>
