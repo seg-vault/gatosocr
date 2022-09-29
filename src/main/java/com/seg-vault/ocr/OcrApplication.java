@@ -24,7 +24,7 @@ public class OcrApplication {
         @Bean
 	CommandLineRunner init(StorageService storageService) {
 		return (args) -> {
-			storageService.deleteAll();
+			storageService.deleteAll("temp");//delete contents of temp directory
 			storageService.init();
 		};
 	}
