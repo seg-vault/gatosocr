@@ -14,18 +14,20 @@ public interface StorageService {
 
 	void init();
 
-	void store(MultipartFile file);
+	void store(MultipartFile file, String label);
 
-	Stream<Path> loadAll();
+	Stream<Path> loadAll(String label);
         
-        Stream<Path> loadAllTmp();
+        Stream<Path> serveAll(String label);
 
-	Path load(String filename);
+	Path load(String filename, String label);
 
-	Resource loadAsResource(String filename);
+	Resource loadAsResource(String filename, String label);
 
-	void deleteAll();
+	void deleteAll(String label);
         
         Path getPermanentLocation();
+        
+        Path getStorageLocation(String label);
 
 }

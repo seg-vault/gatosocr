@@ -40,13 +40,14 @@ public class OcrService {
     public void execute() {
         logger.info("Converting tmp Directory");
         try {
-            List<Path> paths = storageService.loadAllTmp().collect(Collectors.toList());
+            List<Path> paths = storageService.loadAll("tmp").collect(Collectors.toList());
             if(paths.size() == 0){
                 logger.info("nothing to convert...");
                 return;
             }
             Path permPath = storageService.getPermanentLocation();
             logger.info("Setting perm path to: "+permPath.toString()); //permPath.toAbsolutePath().toString()
+            logger.info(paths.toString());
             for(Path path : paths){
                 logger.info("Converting: "+path.toString()+" ...");
                 ITesseract tess = new Tesseract();

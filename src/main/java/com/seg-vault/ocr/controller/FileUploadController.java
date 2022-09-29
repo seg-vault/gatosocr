@@ -32,22 +32,32 @@ public class FileUploadController {
 		this.storageService = storageService;
 	}
 
-	@GetMapping("/files")
-	public String listUploadedFiles(Model model) throws IOException {
-
-		model.addAttribute("files", storageService.loadAll().map(
+	@GetMapping("/files/tmp")
+	public String listUploadedTmpFiles(Model model) throws IOException {
+                String tmp = "tmp";
+		model.addAttribute("files", storageService.serveAll(tmp).map(
 				path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
-						"serveFile", path.getFileName().toString()).build().toUri().toString())
+						"serveFile", tmp, path.getFileName().toString()).build().toUri().toString())
 				.collect(Collectors.toList()));
 
 		return "list-files";
 	}
+        
+        @GetMapping("/files/perm")
+	public String listUploadedPermFiles(Model model) throws IOException {
+                String perm = "perm";
+		model.addAttribute("files", storageService.serveAll(perm).map(
+				path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
+						"serveFile", perm, path.getFileName().toString()).build().toUri().toString())
+				.collect(Collectors.toList()));
+		return "list-files";
+	}
 
-	@GetMapping("/files/{filename:.+}")
+	@GetMapping("/files/{label}/{filename:.+}")
 	@ResponseBody
-	public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
+	public ResponseEntity<Resource> serveFile(@PathVariable String label, @PathVariable String filename) {
 
-		Resource file = storageService.loadAsResource(filename);
+		Resource file = storageService.loadAsResource(filename, label);
 		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
 				"attachment; filename=\"" + file.getFilename() + "\"").body(file);
 	}
@@ -56,7 +66,7 @@ public class FileUploadController {
 	public String handleFileUpload(@RequestParam("file") MultipartFile file,
 			RedirectAttributes redirectAttributes) {
 
-		storageService.store(file);
+		storageService.store(file,"tmp");
 		redirectAttributes.addFlashAttribute("message",
 				"You successfully uploaded " + file.getOriginalFilename() + "!");
 

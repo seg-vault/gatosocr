@@ -34,15 +34,16 @@ public class FileSystemStorageService implements StorageService {
 	}
 
 	@Override
-	public void store(MultipartFile file) {
+	public void store(MultipartFile file, String label) {
+                Path stloc = getStorageLocation(label);
 		try {
 			if (file.isEmpty()) {
 				throw new StorageException("Failed to store empty file.");
 			}
-			Path destinationFile = this.tmpLocation.resolve(
+			Path destinationFile = stloc.resolve(
 					Paths.get(file.getOriginalFilename()))
 					.normalize().toAbsolutePath();
-			if (!destinationFile.getParent().equals(this.tmpLocation.toAbsolutePath())) {
+			if (!destinationFile.getParent().equals(stloc.toAbsolutePath())) {
 				// This is a security check
 				throw new StorageException(
 						"Cannot store file outside current directory.");
@@ -56,13 +57,13 @@ public class FileSystemStorageService implements StorageService {
 			throw new StorageException("Failed to store file.", e);
 		}
 	}
-
-	@Override
-	public Stream<Path> loadAll() {
+        
+        @Override
+	public Stream<Path> loadAll(String label) {
+                Path stloc = getStorageLocation(label);
 		try {
-			return Files.walk(this.tmpLocation, 1)
-				.filter(path -> !path.equals(this.tmpLocation))
-				.map(this.tmpLocation::relativize);
+			return Files.walk(stloc, 1)
+				.filter(path -> !path.equals(stloc));
 		}
 		catch (IOException e) {
 			throw new StorageException("Failed to read stored files", e);
@@ -70,11 +71,13 @@ public class FileSystemStorageService implements StorageService {
 
 	}
         
-        @Override
-	public Stream<Path> loadAllTmp() {
+	@Override
+	public Stream<Path> serveAll(String label) {
+                Path stloc = getStorageLocation(label);
 		try {
-			return Files.walk(this.tmpLocation, 1)
-				.filter(path -> !path.equals(this.tmpLocation));
+			return Files.walk(stloc, 1)
+				.filter(path -> !path.equals(stloc))
+				.map(this.tmpLocation::relativize);
 		}
 		catch (IOException e) {
 			throw new StorageException("Failed to read stored files", e);
@@ -83,14 +86,15 @@ public class FileSystemStorageService implements StorageService {
 	}
 
 	@Override
-	public Path load(String filename) {
-		return tmpLocation.resolve(filename);
+	public Path load(String filename, String label) {
+                Path stloc = getStorageLocation(label);
+		return stloc.resolve(filename);
 	}
 
 	@Override
-	public Resource loadAsResource(String filename) {
+	public Resource loadAsResource(String filename, String label) {
 		try {
-			Path file = load(filename);
+			Path file = load(filename,label);
 			Resource resource = new UrlResource(file.toUri());
 			if (resource.exists() || resource.isReadable()) {
 				return resource;
@@ -107,8 +111,9 @@ public class FileSystemStorageService implements StorageService {
 	}
 
 	@Override
-	public void deleteAll() {
-		FileSystemUtils.deleteRecursively(tmpLocation.toFile());
+	public void deleteAll(String label) {
+                Path stloc = getStorageLocation(label);
+		FileSystemUtils.deleteRecursively(stloc.toFile());
 	}
 
 	@Override
@@ -128,4 +133,18 @@ public class FileSystemStorageService implements StorageService {
         public Path getPermanentLocation(){
             return permLocation;
         }
+
+        @Override
+        public Path getStorageLocation(String label){
+            switch(label){
+                case "tmp":
+                    return this.tmpLocation;
+ 
+                case "perm":
+                    return this.permLocation;
+                default:
+                    throw new RuntimeException("Invalid Location provided");
+            }
+        }
+        
 }
