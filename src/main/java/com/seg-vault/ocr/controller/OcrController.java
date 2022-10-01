@@ -2,7 +2,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.seg-vault.ocr.service;
+package com.seg-vault.ocr.controller;
+import com.seg-vault.ocr.service.OcrService;
 import com.seg-vault.ocr.service.OcrService;
 import org.jobrunr.scheduling.JobScheduler;
 import org.springframework.beans.factory.annotation.Autowired;

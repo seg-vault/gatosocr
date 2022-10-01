@@ -1,5 +1,6 @@
-package com.seg-vault.ocr.storage;
+package com.seg-vault.ocr.service;
 
+import com.seg-vault.ocr.service.StorageService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.seg-vault.ocr.exception.StorageException;
 import com.seg-vault.ocr.exception.StorageFileNotFoundException;
+import com.seg-vault.ocr.storage.StorageProperties;
 
 @Service
 public class FileSystemStorageService implements StorageService {

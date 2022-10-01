@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.seg-vault.ocr.exception.StorageFileNotFoundException;
-import com.seg-vault.ocr.storage.StorageService;
+import com.seg-vault.ocr.service.StorageService;
 
 @Controller
 public class FileUploadController {

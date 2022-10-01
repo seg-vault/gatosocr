@@ -5,7 +5,6 @@
 package com.seg-vault.ocr.service;
 import com.seg-vault.ocr.entity.WorkItem;
 import com.seg-vault.ocr.repository.WorkItemRepository;
-import com.seg-vault.ocr.storage.StorageService;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -16,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import net.sourceforge.tess4j.*;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -68,23 +69,27 @@ public class OcrService {
             }
             Path permPath = storageService.getPermanentLocation();
             for(Path path : paths){
-                List<WorkItem> pathResults = repository.findByPath(path.toString()); 
-                if(pathResults.size() == 0){
-                    WorkItem item = new WorkItem(path.toString());
-                    repository.save(item);
-                    if(Files.exists(path)){
-                        logger.info("Converting: "+path.toString()+" ...");
-                        ITesseract tess = new Tesseract();
-                        List<RenderedFormat> format = new ArrayList<RenderedFormat>();
-                        format.add(RenderedFormat.PDF);
-                        String newName = permPath.toString() + '\\' + path.getFileName();
-                        tess.createDocuments(path.toString(), newName, format);//path.toAbsolutePath().toString()
-                        logger.info(path.toString()+" ...complete");
-                        logger.info("deleting path...");
-                        Files.delete(path);
-                        logger.info("deleting item.."+item);
-                        repository.delete(item);
+                if(isTif(path)){
+                    List<WorkItem> pathResults = repository.findByPath(path.toString()); 
+                    if(pathResults.size() == 0){
+                        WorkItem item = new WorkItem(path.toString());
+                        repository.save(item);
+                        if(Files.exists(path)){
+                            logger.info("Converting: "+path.toString()+" ...");
+                            ITesseract tess = new Tesseract();
+                            List<RenderedFormat> format = new ArrayList<RenderedFormat>();
+                            format.add(RenderedFormat.PDF);
+                            String newName = permPath.toString() + '\\' + path.getFileName();
+                            tess.createDocuments(path.toString(), newName, format);//path.toAbsolutePath().toString()
+                            logger.info(path.toString()+" ...complete");
+                            logger.info("deleting path...");
+                            Files.delete(path);
+                            logger.info("deleting item.."+item);
+                            repository.delete(item);
+                        }
                     }
+                }else{
+                    convertToTiff(path,permPath);
                 }
             }
         } catch (Exception e) {
@@ -94,9 +99,9 @@ public class OcrService {
         }
     }
     
-    private void convertToTiff(String fileName, String location){ //thanks dyllanwli
+    private void convertToTiff(Path in, Path out){ //thanks dyllanwli
         try{
-            PDDocument doc = PDDocument.load(new File(fileName));
+            PDDocument doc = PDDocument.load(new File(in.toString()));
             PDFRenderer renderer = new PDFRenderer(doc);
             int pageCount = doc.getNumberOfPages();
             ByteArrayOutputStream imageBaos = new ByteArrayOutputStream();
@@ -139,7 +144,9 @@ public class OcrService {
             writer.dispose();
             ByteArrayOutputStream toFile = getOutput(output);
             //need to get file name
-            toFile.writeTo();
+            String newName = changeFileNameExtension(in,"tif");
+            newName = out.toString() + '\\' + newName;
+            createTifFile(toFile, newName);
         }catch(Exception e){
             logger.info("unable to parse PDF document.. "+e);
         }
@@ -170,6 +177,39 @@ public class OcrService {
         }
         // System.out.println("Total bytes read=" + counter);
         return bos;
+    }
+    
+    private String getFileExtension(Path in){
+        int index = in.getFileName().toString().lastIndexOf(".");
+        logger.info("Extention: "+in.getFileName().toString().substring(0, index));
+        String ext = in.getFileName().toString().substring(0, index);
+        return ext;
+    }
+    
+    private String changeFileNameExtension(Path in, String ext){
+        String curExt = getFileExtension(in);
+        File file = in.toFile();
+        String newName = curExt.replace(curExt, ext);
+        return newName;
+    }
+    
+    private void createTifFile(ByteArrayOutputStream bos, String filename){
+        try(OutputStream outputStream = new FileOutputStream(filename)) {
+            bos.writeTo(outputStream);
+        }catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+    
+    private boolean isTif(Path test){
+        switch(getFileExtension(test)){
+            case "tiff":
+                return true;
+            case "tif":
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

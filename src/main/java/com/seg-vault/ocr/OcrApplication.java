@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 import com.seg-vault.ocr.storage.StorageProperties;
-import com.seg-vault.ocr.storage.StorageService;
+import com.seg-vault.ocr.service.StorageService;
 
 @SpringBootApplication
 @EnableConfigurationProperties(StorageProperties.class)
