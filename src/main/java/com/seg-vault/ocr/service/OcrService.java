@@ -61,8 +61,9 @@ public class OcrService {
     @Recurring(id = "convert-tmp-job", cron = "* * * * *")
     @Job(name = "Convert tmp directory")
     public void execute() {
+        String tmp = "tmp";
         try {
-            List<Path> paths = storageService.loadAll("tmp").collect(Collectors.toList());
+            List<Path> paths = storageService.loadAll(tmp).collect(Collectors.toList());
             if(paths.size() == 0){
                 logger.info("nothing to convert...");
                 return;
@@ -89,7 +90,7 @@ public class OcrService {
                         }
                     }
                 }else{
-                    convertToTiff(path,permPath);
+                    convertToTiff(path,tmp);
                 }
             }
         } catch (Exception e) {
@@ -99,7 +100,7 @@ public class OcrService {
         }
     }
     
-    private void convertToTiff(Path in, Path out){ //thanks dyllanwli
+    private void convertToTiff(Path in, String out){ //thanks dyllanwli
         try{
             PDDocument doc = PDDocument.load(new File(in.toString()));
             PDFRenderer renderer = new PDFRenderer(doc);
@@ -145,7 +146,7 @@ public class OcrService {
             ByteArrayOutputStream toFile = getOutput(output);
             //need to get file name
             String newName = changeFileNameExtension(in,"tif");
-            newName = out.toString() + '\\' + newName;
+            newName = out + '\\' + newName;
             createTifFile(toFile, newName);
         }catch(Exception e){
             logger.info("unable to parse PDF document.. "+e);
@@ -188,8 +189,7 @@ public class OcrService {
     
     private String changeFileNameExtension(Path in, String ext){
         String curExt = getFileExtension(in);
-        File file = in.toFile();
-        String newName = curExt.replace(curExt, ext);
+        String newName = in.getFileName().toString().replace(curExt, ext);
         return newName;
     }
     
