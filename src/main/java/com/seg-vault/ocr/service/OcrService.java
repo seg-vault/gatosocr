@@ -90,7 +90,14 @@ public class OcrService {
                         }
                     }
                 }else{
-                    convertToTiff(path,tmp);
+                    List<WorkItem> pathResults = repository.findByPath(path.toString()); 
+                    if(pathResults.size() == 0){
+                        WorkItem item = new WorkItem(path.toString());
+                        repository.save(item);
+                        convertToTiff(path,tmp);
+                        Files.delete(path);
+                        repository.delete(item);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -102,6 +109,7 @@ public class OcrService {
     
     private void convertToTiff(Path in, String out){ //thanks dyllanwli
         try{
+            logger.info("converting to tiff...");
             PDDocument doc = PDDocument.load(new File(in.toString()));
             PDFRenderer renderer = new PDFRenderer(doc);
             int pageCount = doc.getNumberOfPages();
@@ -145,9 +153,13 @@ public class OcrService {
             writer.dispose();
             ByteArrayOutputStream toFile = getOutput(output);
             //need to get file name
-            String newName = changeFileNameExtension(in,"tif");
+            String newName = changeFileNameExtension(in,".tif");
             newName = out + '\\' + newName;
+            logger.info("New Name: "+newName);
+            WorkItem item = new WorkItem(newName);
+            repository.save(item);
             createTifFile(toFile, newName);
+            repository.delete(item);
         }catch(Exception e){
             logger.info("unable to parse PDF document.. "+e);
         }
@@ -182,8 +194,9 @@ public class OcrService {
     
     private String getFileExtension(Path in){
         int index = in.getFileName().toString().lastIndexOf(".");
-        logger.info("Extention: "+in.getFileName().toString().substring(0, index));
-        String ext = in.getFileName().toString().substring(0, index);
+        String name = in.getFileName().toString();
+        logger.info("Extention: "+name.substring(index,name.length()));
+        String ext = name.substring(index,name.length());
         return ext;
     }
     
@@ -202,10 +215,11 @@ public class OcrService {
     }
     
     private boolean isTif(Path test){
+        logger.info("File is: "+getFileExtension(test));
         switch(getFileExtension(test)){
-            case "tiff":
+            case ".tiff":
                 return true;
-            case "tif":
+            case ".tif":
                 return true;
             default:
                 return false;
