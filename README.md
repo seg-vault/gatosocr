@@ -1,4 +1,4 @@
-# Gato's OCR Web App
+# OCR Web App
 
 An app to make searchable PDF documents
 
