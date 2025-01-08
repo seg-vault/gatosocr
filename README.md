@@ -1,6 +1,6 @@
 # OCR Web App
 
-An app to make searchable PDF documents
+An app to make PDF documents searchable
 
 ## Attribution
 
